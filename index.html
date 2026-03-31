@@ -53,7 +53,6 @@
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--cono-pink-mid); border-radius: 10px; }
 
-        /* Estilo para que el textarea no tenga scroll y se vea limpio */
         .auto-expand {
             overflow: hidden;
             resize: none;
@@ -78,7 +77,6 @@
             return <i data-lucide={name} style={{ width: size, height: size }} className={`inline-block align-text-bottom ${className}`}></i>;
         };
 
-        // Componente personalizado de Textarea que se expande solo con estética unificada
         const AutoExpandingTextarea = ({ value, onChange, placeholder, className, label, icon }) => {
             const textareaRef = useRef(null);
 
@@ -114,9 +112,10 @@
         };
 
         const App = () => {
+            // Se inicializan los registros con valor 1 en todos los campos (Gráfico Base)
             const [layers, setLayers] = useState([
-                { id: 1, name: 'Registro 01', scores: [2, 1, 3, 1, 2], visible: true, color: '#b01e23' },
-                { id: 2, name: 'Registro 02', scores: [1, 3, 2, 2, 1], visible: true, color: '#831843' },
+                { id: 1, name: 'Registro 01', scores: [1, 1, 1, 1, 1], visible: true, color: '#b01e23' },
+                { id: 2, name: 'Registro 02', scores: [1, 1, 1, 1, 1], visible: true, color: '#831843' },
             ]);
             
             const [metadata, setMetadata] = useState({
@@ -186,6 +185,9 @@
                 );
                 const maxVal = Math.max(...averages);
                 const maxIdx = averages.indexOf(maxVal);
+                
+                // Si todos están en 1, no hay un dolor crítico marcado aún
+                if (maxVal === 1) return "Ninguno detectado";
                 return variables[maxIdx].subject;
             }, [layers]);
 
@@ -198,7 +200,7 @@
                             </div>
                             <div>
                                 <h2 className="font-black text-sm uppercase tracking-tighter leading-none">Arqueología Visual</h2>
-                                <p className="text-[10px] text-white/70 font-bold uppercase tracking-widest">Gabinete de Análisis</p>
+                                <p className="text-[10px] text-white/70 font-bold uppercase tracking-widest leading-none mt-1">FAD UNCuyo</p>
                             </div>
                         </div>
                         <div className="flex gap-4">
@@ -213,7 +215,7 @@
                         <aside className="lg:col-span-4 space-y-6 no-print">
                             <section className="bg-white p-6 rounded-3xl shadow-sm border border-[#eeb8ac]">
                                 <h3 className="font-black text-[#b01e23] text-[10px] uppercase tracking-widest mb-6 flex items-center gap-2">
-                                    <Icon name="user" size={12} /> Investigador Responsable
+                                    <Icon name="user" size={12} /> Arqueólogo/a Responsable
                                 </h3>
                                 <div className="space-y-4">
                                     <div className="space-y-1">
@@ -367,7 +369,7 @@
 
                             <div className="mt-12 pt-6 border-t-2 border-[#eeb8ac] flex justify-between items-end">
                                 <div>
-                                    <p className="text-[9px] font-black text-[#b01e23]/50 uppercase tracking-widest mb-1">Responsable del Registro</p>
+                                    <p className="text-[9px] font-black text-[#b01e23]/50 uppercase tracking-widest mb-1">Arqueólogo/a Responsable</p>
                                     <div className="text-sm font-black text-[#b01e23] uppercase tracking-tight">
                                         {metadata.autor || 'PENDIENTE DE IDENTIFICACIÓN'}
                                     </div>
