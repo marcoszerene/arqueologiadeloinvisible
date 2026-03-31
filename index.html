@@ -3,102 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analizador de Arqueología Visual - FAD UNCuyo</title>
+    <title>Analizador de Arqueología Visual - Individual - FAD UNCuyo</title>
     
-    <!-- 1. Estilos -->
+    <!-- Dependencias -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- 2. Dependencias Base -->
     <script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/prop-types@15.8.1/prop-types.min.js"></script>
-    
-    <!-- 3. Recharts (Requiere React y PropTypes arriba) -->
     <script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
-    
-    <!-- 4. Otros -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;800&family=Inter:wght@300;400;700;900&display=swap');
+        
+        :root {
+            --cono-red: #b01e23;
+            --cono-pink-light: #f9d8cf;
+            --cono-pink-mid: #eeb8ac;
+            --cono-purple: #831843;
+            --cono-text: #374151;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--cono-pink-light);
+            color: var(--cono-text);
+        }
+
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
         @media print {
             .no-print { display: none !important; }
             .print-only { display: block !important; }
-            body { padding: 0; margin: 0; background: white; }
+            body { background: white; padding: 0; margin: 0; }
             .report-container { 
-                width: 100%; 
-                max-width: 100%;
-                padding: 1.5cm;
-                box-shadow: none !important;
-                border: none !important;
+                box-shadow: none !important; 
+                border: 2px solid #000 !important;
+                border-radius: 0 !important;
+                width: 100%;
+                min-height: 297mm;
+                padding: 15mm !important;
+                margin: 0;
             }
-            textarea { border: none !important; resize: none; overflow: hidden; height: auto !important; }
+            .chart-container { height: 350px !important; }
+            textarea { border: none !important; background: transparent !important; }
         }
-        .print-only { display: none; }
+
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--cono-pink-mid); border-radius: 10px; }
+
+        /* Estilo para que el textarea no tenga scroll y se vea limpio */
+        .auto-expand {
+            overflow: hidden;
+            resize: none;
+            min-height: 90px;
+        }
     </style>
 </head>
-<body class="bg-slate-50">
+<body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useMemo, useEffect } = React;
-        
-        // Verificación de seguridad para Recharts
-        const RechartsObj = window.Recharts;
-        if (!RechartsObj) {
-            console.error("Error: Recharts no se cargó correctamente.");
-        }
-
+        const { useState, useMemo, useEffect, useRef } = React;
         const { 
             Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, 
-            ResponsiveContainer, Legend, Tooltip 
-        } = RechartsObj;
+            ResponsiveContainer, Legend 
+        } = window.Recharts;
 
-        const Icon = ({ name, size = 16, className = "" }) => {
+        const Icon = ({ name, size = 18, className = "" }) => {
             useEffect(() => {
                 if (window.lucide) window.lucide.createIcons();
             }, [name]);
-            return <i data-lucide={name} style={{ width: size, height: size }} className={`inline-block ${className}`}></i>;
+            return <i data-lucide={name} style={{ width: size, height: size }} className={`inline-block align-text-bottom ${className}`}></i>;
+        };
+
+        // Componente personalizado de Textarea que se expande solo con estética unificada
+        const AutoExpandingTextarea = ({ value, onChange, placeholder, className, label, icon }) => {
+            const textareaRef = useRef(null);
+
+            const adjustHeight = () => {
+                const textarea = textareaRef.current;
+                if (textarea) {
+                    textarea.style.height = "auto";
+                    textarea.style.height = `${textarea.scrollHeight}px`;
+                }
+            };
+
+            useEffect(() => {
+                adjustHeight();
+            }, [value]);
+
+            return (
+                <div className="space-y-3">
+                    <h4 className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white bg-[#b01e23] px-4 py-1.5 rounded-full w-fit shadow-sm`}>
+                        <Icon name={icon} size={12} /> {label}
+                    </h4>
+                    <textarea 
+                        ref={textareaRef}
+                        className={`w-full bg-[#fcf5f3] border-none p-4 rounded-2xl text-[13px] font-medium leading-relaxed outline-none focus:ring-2 focus:ring-[#b01e23] focus:ring-opacity-20 transition-all auto-expand ${className}`}
+                        placeholder={placeholder}
+                        value={value}
+                        onChange={(e) => {
+                            onChange(e.target.value);
+                            adjustHeight();
+                        }}
+                    />
+                </div>
+            );
         };
 
         const App = () => {
             const [layers, setLayers] = useState([
-                { id: 1, name: 'Registro A', scores: [2, 1, 3, 1, 1], visible: true, color: '#6366f1' },
-                { id: 2, name: 'Registro B', scores: [1, 3, 2, 2, 1], visible: true, color: '#ec4899' },
+                { id: 1, name: 'Registro 01', scores: [2, 1, 3, 1, 2], visible: true, color: '#b01e23' },
+                { id: 2, name: 'Registro 02', scores: [1, 3, 2, 2, 1], visible: true, color: '#831843' },
             ]);
-            const [insight, setInsight] = useState('');
-            const [hmw, setHmw] = useState('');
+            
+            const [metadata, setMetadata] = useState({
+                autor: '',
+                zona: '',
+                insight: '',
+                hmw: '',
+                prospectiva: ''
+            });
 
             const variables = [
-                { subject: 'Sintonía', description: 'Contexto Físico/Espacial' },
-                { subject: 'Fricción', description: 'Cognitivo' },
-                { subject: 'Obsolescencia', description: 'Identidad/Inercia' },
-                { subject: 'Coherencia', description: 'Emocional' },
-                { subject: 'Inclusividad', description: 'Exclusión' },
+                { subject: 'Sintonía', full: 'Espacial / Contexto' },
+                { subject: 'Fricción', full: 'Cognitivo / Usabilidad' },
+                { subject: 'Obsolescencia', full: 'Identidad / Inercia' },
+                { subject: 'Coherencia', full: 'Emocional / Conexión' },
+                { subject: 'Inclusividad', full: 'Social / Exclusión' },
             ];
 
-            const layerColors = ['#6366f1', '#ec4899', '#f59e0b', '#10b981', '#8b5cf6'];
+            const layerColors = ['#b01e23', '#831843', '#d97706', '#9d174d', '#7c2d12'];
+
+            const handleMetadata = (key, value) => {
+                setMetadata(prev => ({ ...prev, [key]: value }));
+            };
 
             const addLayer = () => {
                 if (layers.length < 5) {
                     setLayers([...layers, { 
                         id: Date.now(), 
-                        name: `Registro ${String.fromCharCode(65 + layers.length)}`, 
+                        name: `Registro 0${layers.length + 1}`, 
                         scores: [1, 1, 1, 1, 1],
                         visible: true,
-                        color: layerColors[layers.length]
+                        color: layerColors[layers.length % layerColors.length]
                     }]);
                 }
             };
 
             const removeLayer = (id) => {
-                if (layers.length > 1) setLayers(layers.filter(l => l.id !== id));
-            };
-
-            const toggleVisibility = (id) => {
-                setLayers(layers.map(l => l.id === id ? { ...l, visible: !l.visible } : l));
+                if (layers.length > 1) {
+                    setLayers(layers.filter(l => l.id !== id));
+                }
             };
 
             const updateScore = (layerId, varIndex, value) => {
@@ -116,10 +174,8 @@
                 return variables.map((v, i) => {
                     const dataPoint = { subject: v.subject };
                     layers.forEach(layer => {
-                        dataPoint[layer.name] = layer.scores[i];
+                        if(layer.visible) dataPoint[layer.name] = layer.scores[i];
                     });
-                    const avg = layers.reduce((acc, curr) => acc + curr.scores[i], 0) / layers.length;
-                    dataPoint.Promedio = parseFloat(avg.toFixed(2));
                     return dataPoint;
                 });
             }, [layers]);
@@ -130,137 +186,197 @@
                 );
                 const maxVal = Math.max(...averages);
                 const maxIdx = averages.indexOf(maxVal);
-                if (maxVal <= 1.5) return "Nivel de alerta bajo/estable";
-                return variables[maxIdx].description;
+                return variables[maxIdx].subject;
             }, [layers]);
 
             return (
-                <div className="min-h-screen font-sans text-slate-900 print:bg-white">
-                    <header className="max-w-7xl mx-auto p-8 no-print flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div>
-                            <h1 className="text-3xl font-black text-indigo-950 tracking-tight">Arqueología Visual</h1>
-                            <p className="text-slate-500 font-medium italic">FAD - UNCuyo | Diagnóstico de Patologías Visuales</p>
-                        </div>
-                        <div className="flex items-center gap-3 bg-white p-2 rounded-2xl shadow-sm border border-slate-200">
-                            <div className="flex -space-x-2">
-                                {layers.map((l) => (
-                                    <div key={l.id} className="w-8 h-8 rounded-full border-2 border-white" style={{ backgroundColor: l.color }} />
-                                ))}
+                <div className="min-h-screen pb-12">
+                    <nav className="no-print bg-[#b01e23] text-white px-6 py-4 flex justify-between items-center sticky top-0 z-50 shadow-2xl">
+                        <div className="flex items-center gap-3">
+                            <div className="bg-white/20 p-2 rounded-lg backdrop-blur-md">
+                                <Icon name="eye" className="text-white" />
                             </div>
-                            <span className="text-xs font-bold text-slate-500 px-2 uppercase">{layers.length} / 5 CAPAS</span>
-                        </div>
-                    </header>
-
-                    <main className="max-w-7xl mx-auto px-8 pb-12 grid grid-cols-1 lg:grid-cols-12 gap-8 print:block">
-                        <div className="lg:col-span-4 space-y-4 no-print">
-                            <div className="flex justify-between items-center py-2">
-                                <h2 className="font-black uppercase text-xs tracking-widest text-slate-400">Registros</h2>
-                                <button onClick={addLayer} disabled={layers.length >= 5} className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all">
-                                    <Icon name="plus" size={14} /> Nueva Capa
-                                </button>
+                            <div>
+                                <h2 className="font-black text-sm uppercase tracking-tighter leading-none">Arqueología Visual</h2>
+                                <p className="text-[10px] text-white/70 font-bold uppercase tracking-widest">Gabinete de Análisis</p>
                             </div>
+                        </div>
+                        <div className="flex gap-4">
+                            <button onClick={() => window.print()} className="bg-white text-[#b01e23] hover:bg-slate-100 px-6 py-2.5 rounded-xl text-xs font-black flex items-center gap-2 transition-all shadow-lg uppercase">
+                                <Icon name="printer" size={14} /> Exportar Reporte
+                            </button>
+                        </div>
+                    </nav>
 
-                            <div className="space-y-4 overflow-y-auto max-h-[75vh] pr-2 custom-scrollbar">
-                                {layers.map((layer, lIdx) => (
-                                    <div key={layer.id} className={`bg-white p-4 rounded-2xl shadow-sm border-l-4 transition-all ${layer.visible ? 'opacity-100' : 'opacity-60 grayscale'}`} style={{ borderLeftColor: layer.color }}>
-                                        <div className="flex justify-between items-center mb-3">
-                                            <div className="flex items-center gap-2">
-                                                <button onClick={() => toggleVisibility(layer.id)} className="text-slate-400 hover:text-indigo-600">
-                                                    <Icon name={layer.visible ? "eye" : "eye-off"} size={16} />
-                                                </button>
-                                                <input type="text" className="font-bold text-sm text-slate-700 bg-transparent border-none outline-none focus:ring-0 w-32" value={layer.name} onChange={(e) => {
-                                                    const newLayers = [...layers];
-                                                    newLayers[lIdx].name = e.target.value;
-                                                    setLayers(newLayers);
-                                                }} />
-                                            </div>
-                                            {layers.length > 1 && (
-                                                <button onClick={() => removeLayer(layer.id)} className="text-slate-300 hover:text-red-500">
+                    <main className="max-w-[1400px] mx-auto mt-8 px-6 grid grid-cols-1 lg:grid-cols-12 gap-8 print:block print:mt-0 print:px-0">
+                        
+                        <aside className="lg:col-span-4 space-y-6 no-print">
+                            <section className="bg-white p-6 rounded-3xl shadow-sm border border-[#eeb8ac]">
+                                <h3 className="font-black text-[#b01e23] text-[10px] uppercase tracking-widest mb-6 flex items-center gap-2">
+                                    <Icon name="user" size={12} /> Investigador Responsable
+                                </h3>
+                                <div className="space-y-4">
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Nombre y Apellido</label>
+                                        <input 
+                                            type="text" 
+                                            className="w-full bg-[#fcf5f3] border-none rounded-xl p-3 text-sm font-bold focus:ring-2 focus:ring-[#b01e23] transition-all"
+                                            value={metadata.autor}
+                                            onChange={(e) => handleMetadata('autor', e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Zona de Excavación</label>
+                                        <input 
+                                            type="text" 
+                                            placeholder="Ciudad / Barrio / Punto de interés" 
+                                            className="w-full bg-[#fcf5f3] border-none rounded-xl p-3 text-sm font-bold focus:ring-2 focus:ring-[#b01e23] transition-all"
+                                            value={metadata.zona}
+                                            onChange={(e) => handleMetadata('zona', e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section className="bg-white p-6 rounded-3xl shadow-sm border border-[#eeb8ac]">
+                                <div className="flex justify-between items-center mb-6">
+                                    <h3 className="font-black text-[#b01e23] text-[10px] uppercase tracking-widest flex items-center gap-2">
+                                        <Icon name="database" size={12} /> Unidades de Registro
+                                    </h3>
+                                    <button onClick={addLayer} className="bg-[#b01e23] text-white p-1.5 rounded-lg hover:bg-[#831843] transition-all">
+                                        <Icon name="plus" size={16} />
+                                    </button>
+                                </div>
+                                
+                                <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                                    {layers.map((layer, lIdx) => (
+                                        <div key={layer.id} className="p-4 rounded-2xl border border-slate-100 bg-[#fcf5f3]/50 hover:bg-white transition-all group">
+                                            <div className="flex justify-between items-center mb-4">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-3 h-3 rounded-full" style={{backgroundColor: layer.color}} />
+                                                    <input 
+                                                        className="bg-transparent font-black text-xs uppercase outline-none focus:text-[#b01e23]"
+                                                        value={layer.name}
+                                                        onChange={(e) => {
+                                                            const n = [...layers]; n[lIdx].name = e.target.value; setLayers(n);
+                                                        }}
+                                                    />
+                                                </div>
+                                                <button onClick={() => removeLayer(layer.id)} className="text-slate-300 hover:text-[#b01e23] opacity-0 group-hover:opacity-100 transition-all">
                                                     <Icon name="trash-2" size={14} />
                                                 </button>
-                                            )}
-                                        </div>
-                                        <div className="space-y-2">
-                                            {variables.map((v, vIdx) => (
-                                                <div key={v.subject} className="flex items-center justify-between gap-2">
-                                                    <span className="text-[9px] font-bold text-slate-400 uppercase">{v.subject}</span>
-                                                    <div className="flex gap-1">
-                                                        {[1, 2, 3].map((val) => (
-                                                            <button key={val} onClick={() => updateScore(layer.id, vIdx, val)} className={`w-8 py-1 text-[10px] font-black rounded border transition-all ${layer.scores[vIdx] === val ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-100 text-slate-200 hover:border-slate-300'}`}>
-                                                                {val}
-                                                            </button>
-                                                        ))}
+                                            </div>
+                                            <div className="grid grid-cols-1 gap-2">
+                                                {variables.map((v, vIdx) => (
+                                                    <div key={v.subject} className="flex items-center justify-between">
+                                                        <span className="text-[9px] font-bold text-slate-500 uppercase">{v.subject}</span>
+                                                        <div className="flex bg-white rounded-lg p-0.5 border border-[#eeb8ac]">
+                                                            {[1, 2, 3].map(val => (
+                                                                <button 
+                                                                    key={val}
+                                                                    onClick={() => updateScore(layer.id, vIdx, val)}
+                                                                    className={`w-6 h-6 text-[10px] font-black rounded-md transition-all ${layer.scores[vIdx] === val ? 'bg-[#b01e23] text-white shadow-sm' : 'text-slate-300 hover:text-[#eeb8ac]'}`}
+                                                                >
+                                                                    {val}
+                                                                </button>
+                                                            ))}
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            ))}
+                                                ))}
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="lg:col-span-8 space-y-6 report-container bg-white p-8 md:p-12 rounded-[2.5rem] shadow-sm border border-slate-200 print:shadow-none print:border-none print:p-0">
-                            <div className="print-only mb-12 border-b-2 border-slate-900 pb-6 flex justify-between items-end">
-                                <div>
-                                    <p className="text-xs font-black text-indigo-600 uppercase tracking-[0.3em] mb-2">Informe N°1</p>
-                                    <h2 className="text-4xl font-black text-slate-900 uppercase leading-none">Arqueología de lo Invisible</h2>
-                                    <p className="text-sm font-medium text-slate-500 mt-2">DGF - FAD - UNCuyo</p>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-xs font-bold text-slate-400">FECHA: {new Date().toLocaleDateString()}</p>
-                                    <p className="text-xs font-bold text-slate-400">CÁTEDRA: LÓPEZ DUPERTUIS</p>
-                                </div>
-                            </div>
-
-                            <div className="flex flex-col md:flex-row justify-between items-start mb-8 gap-4">
-                                <div>
-                                    <h3 className="font-black text-slate-900 text-2xl uppercase tracking-tight">Mapeo de Patologías</h3>
-                                    <p className="text-sm text-slate-400 italic">Análisis sistémico de registros de campo.</p>
-                                </div>
-                                <div className="bg-slate-900 text-white px-6 py-3 rounded-2xl text-center">
-                                    <span className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Hallazgo Principal</span>
-                                    <span className="text-base font-black uppercase">{puntoDeDolorCritico}</span>
-                                </div>
-                            </div>
-
-                            <div className="w-full h-[400px] mb-8 bg-slate-50 rounded-3xl p-4 print:bg-white">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <RadarChart cx="50%" cy="50%" outerRadius="80%" data={chartData}>
-                                        <PolarGrid stroke="#cbd5e1" />
-                                        <PolarAngleAxis dataKey="subject" tick={{ fill: '#475569', fontSize: 12, fontWeight: '900' }} />
-                                        <PolarRadiusAxis domain={[0, 3]} tick={false} axisLine={false} />
-                                        {layers.map((layer) => layer.visible && (
-                                            <Radar key={layer.id} name={layer.name} dataKey={layer.name} stroke={layer.color} fill={layer.color} fillOpacity={0.05} strokeWidth={2} dot={{ r: 3 }} />
-                                        ))}
-                                        <Radar name="PROMEDIO" dataKey="Promedio" stroke="#000" fill="transparent" strokeWidth={3} strokeDasharray="5 5" />
-                                        <Legend />
-                                    </RadarChart>
-                                </ResponsiveContainer>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div>
-                                    <h4 className="text-xs font-black text-amber-600 uppercase mb-3 border-b border-amber-100 pb-2">El Insight</h4>
-                                    <textarea className="w-full p-4 h-32 rounded-2xl bg-amber-50/30 border-2 border-amber-100 text-sm outline-none print:p-0 print:bg-transparent print:border-none" placeholder="Revelación del sistema..." value={insight} onChange={(e) => setInsight(e.target.value)} />
-                                </div>
-                                <div>
-                                    <h4 className="text-xs font-black text-emerald-600 uppercase mb-3 border-b border-emerald-100 pb-2">Pregunta HMW</h4>
-                                    <textarea className="w-full p-4 h-32 rounded-2xl bg-emerald-50/30 border-2 border-emerald-100 text-sm outline-none print:p-0 print:bg-transparent print:border-none" placeholder="¿Cómo podríamos...?" value={hmw} onChange={(e) => setHmw(e.target.value)} />
-                                </div>
-                            </div>
-
-                            <div className="print-only mt-12 pt-8 border-t border-slate-100">
-                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Equipo de Investigación</h4>
-                                <div className="grid grid-cols-3 gap-8">
-                                    {[1, 2, 3, 4, 5, 6].map(i => (
-                                        <div key={i} className="border-b border-slate-200 pb-2 text-[10px] text-slate-300">Integrante {i}</div>
                                     ))}
                                 </div>
+                            </section>
+                        </aside>
+
+                        <div className="lg:col-span-8 bg-white report-container rounded-[2.5rem] shadow-xl border border-[#eeb8ac] p-12 relative print:shadow-none print:border-black print:rounded-none overflow-hidden print:overflow-visible">
+                            
+                            <div className="flex justify-between items-start border-b-4 border-[#b01e23] pb-6 mb-6">
+                                <div className="w-full">
+                                    <div className="bg-[#b01e23] text-white text-[9px] font-black px-2 py-1 inline-block rounded mb-4 tracking-widest uppercase leading-none">Diagnóstico Arqueológico 2026</div>
+                                    <h1 className="text-4xl font-black text-[#b01e23] tracking-tighter leading-none mb-2 whitespace-nowrap overflow-hidden text-ellipsis uppercase">ARQUEOLOGÍA DE LO INVISIBLE</h1>
+                                    <p className="text-[#831843] font-bold text-xs mono uppercase tracking-tight italic">Cátedra López Dupertuis | DGF - UNCuyo</p>
+                                </div>
                             </div>
 
-                            <button onClick={() => window.print()} className="w-full mt-10 no-print bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 rounded-2xl shadow-lg flex items-center justify-center gap-3 transition-all">
-                                <Icon name="printer" size={20} /> IMPRIMIR REPORTE A4
-                            </button>
+                            <div className="mb-6">
+                                <div className="chart-container bg-[#fcf5f3] rounded-[2rem] border border-[#eeb8ac] p-6 h-[400px] w-full relative">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <RadarChart cx="50%" cy="50%" outerRadius="80%" data={chartData}>
+                                            <PolarGrid stroke="#eeb8ac" strokeWidth={1} />
+                                            <PolarAngleAxis dataKey="subject" tick={{ fill: '#b01e23', fontSize: 11, fontWeight: '900', textTransform: 'uppercase' }} />
+                                            <PolarRadiusAxis domain={[0, 3]} tick={false} axisLine={false} />
+                                            {layers.map((layer) => layer.visible && (
+                                                <Radar 
+                                                    key={layer.id} 
+                                                    name={layer.name} 
+                                                    dataKey={layer.name} 
+                                                    stroke={layer.color} 
+                                                    fill={layer.color} 
+                                                    fillOpacity={0.12} 
+                                                    strokeWidth={3}
+                                                />
+                                            ))}
+                                            <Legend verticalAlign="bottom" align="center" wrapperStyle={{ paddingTop: '15px', fontSize: '9px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px' }} />
+                                        </RadarChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+
+                            <div className="mb-8">
+                                <div className="bg-[#b01e23] text-white px-8 py-3.5 rounded-[1.5rem] flex items-center justify-between shadow-lg">
+                                    <div className="flex items-center gap-4">
+                                        <Icon name="zap" className="text-[#f9d8cf]" size={20} />
+                                        <h4 className="text-[10px] font-bold uppercase tracking-widest text-white/70">Punto de Dolor Predominante</h4>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-4 w-[1px] bg-white/20"></div>
+                                        <p className="text-base font-black uppercase tracking-[0.15em] text-white">
+                                            {puntoDeDolorCritico}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-8">
+                                <AutoExpandingTextarea 
+                                    label="1. Insight / Revelación"
+                                    icon="search"
+                                    placeholder="¿Por qué sucede? La verdad oculta detrás del síntoma visual..."
+                                    value={metadata.insight}
+                                    onChange={(val) => handleMetadata('insight', val)}
+                                />
+
+                                <AutoExpandingTextarea 
+                                    label="2. Pregunta Generativa (HMW)"
+                                    icon="help-circle"
+                                    placeholder="¿Cómo podríamos intervenir para que...?"
+                                    value={metadata.hmw}
+                                    onChange={(val) => handleMetadata('hmw', val)}
+                                />
+
+                                <AutoExpandingTextarea 
+                                    label="3. Escenario Prospectivo (2050)"
+                                    icon="map"
+                                    placeholder="Describa cómo ha evolucionado el sistema visual en el futuro deseado..."
+                                    value={metadata.prospectiva}
+                                    onChange={(val) => handleMetadata('prospectiva', val)}
+                                />
+                            </div>
+
+                            <div className="mt-12 pt-6 border-t-2 border-[#eeb8ac] flex justify-between items-end">
+                                <div>
+                                    <p className="text-[9px] font-black text-[#b01e23]/50 uppercase tracking-widest mb-1">Responsable del Registro</p>
+                                    <div className="text-sm font-black text-[#b01e23] uppercase tracking-tight">
+                                        {metadata.autor || 'PENDIENTE DE IDENTIFICACIÓN'}
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">DGF - FAD - UNCuyo</p>
+                                    <p className="text-[10px] font-black text-[#831843] uppercase tracking-tighter">Zona: {metadata.zona || 'SIN ASIGNAR'}</p>
+                                </div>
+                            </div>
                         </div>
                     </main>
                 </div>
