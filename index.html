@@ -168,6 +168,14 @@
                 },
             ];
 
+            const glosario = [
+                { title: '1. Sintonía con el contexto', desc: 'Alerta baja o nula: El mensaje se integra orgánicamente a Mendoza (luz, acequias, escala). Alerta / Red Flag: El mensaje es un parche molesto que agrede o ensucia el entorno.' },
+                { title: '2. Fricción (Usuario-Mensaje)', desc: 'Alerta Baja o nula: La interacción fluye. El usuario obtiene lo que necesita sin detenerse. Alerta, Red flag: Hay un obstáculo real. El usuario se confunde, se choca o abandona la acción.' },
+                { title: '3. Obsolescencia', desc: 'Alerta baja o nula: El diseño es vigente, responde al contexto actual y al 2026. Alerta o Red flag: El mensaje es un modo antiguo que ya pierde impacto comunicacional: códigos de otra época que ya no son funcionales.' },
+                { title: '4. Coherencia total', desc: 'Alerta baja o nula: Intencionalidad. Lo que el diseñador quiso transmitir es lo que el usuario siente. Alerta o Red flag: Ruptura o Disonancia. El mensaje genera una emoción opuesta a la buscada (ej. miedo en lugar de seguridad).' },
+                { title: '5. Inclusividad', desc: 'Alerta baja o nula: El mensaje abraza la diversidad y no deja a nadie afuera. (nadie que deba interpretar el mensaje). Alerta o Red flag: Exclusión alta. El mensaje ignora a ciertos grupos (por visión, edad, lenguaje o tecnología).' }
+            ];
+
             const layerColors = ['#b01e23', '#831843', '#d97706', '#9d174d', '#7c2d12'];
 
             const handleMetadata = (key, value) => {
@@ -295,7 +303,7 @@
                             <section className="bg-white p-6 rounded-3xl shadow-sm border border-[#eeb8ac]">
                                 <div className="flex justify-between items-center mb-6">
                                     <h3 className="font-black text-[#b01e23] text-[10px] uppercase tracking-widest flex items-center gap-2">
-                                        <Icon name="database" size={12} /> Unidades de Registro
+                                        <Icon name="image" size={12} /> Imágenes de Registro
                                     </h3>
                                     <button 
                                         onClick={addLayer} 
@@ -341,6 +349,20 @@
                                                     </div>
                                                 ))}
                                             </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+
+                            <section className="bg-white p-6 rounded-3xl shadow-sm border border-[#eeb8ac] no-print">
+                                <h3 className="font-black text-[#b01e23] text-[10px] uppercase tracking-widest mb-4 flex items-center gap-2">
+                                    <Icon name="book" size={12} /> Glosario de Patologías
+                                </h3>
+                                <div className="space-y-3">
+                                    {glosario.map((item, idx) => (
+                                        <div key={idx} className="bg-[#fcf5f3] p-3 rounded-2xl border border-[#eeb8ac]/30">
+                                            <span className="text-[10px] font-black text-[#b01e23] uppercase block mb-1">{item.title}</span>
+                                            <span className="text-[11px] font-medium text-slate-600 leading-tight block italic">{item.desc}</span>
                                         </div>
                                     ))}
                                 </div>
