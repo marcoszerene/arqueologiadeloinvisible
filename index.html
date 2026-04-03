@@ -440,7 +440,7 @@
                                 <AutoExpandingTextarea 
                                     label="1. Insight / Revelación"
                                     icon="search"
-                                    placeholder="¿Por qué sucede? La verdad oculta detrás del síntoma visual..."
+                                    placeholder="Un Insight o una revelación, no es lo que vemos, es lo que deducimos. Identificamos la falla-dolor más grave (física, cognitiva, emocional, de exclusión o de identidad). El insight nos dice por qué duele."
                                     value={metadata.insight}
                                     onChange={(val) => handleMetadata('insight', val)}
                                 />
@@ -448,7 +448,7 @@
                                 <AutoExpandingTextarea 
                                     label="2. Pregunta Generativa (HMW)"
                                     icon="help-circle"
-                                    placeholder="¿Cómo podríamos intervenir para que...?"
+                                    placeholder="Una pregunta generativa es una pregunta que no genera una respuesta cerrada sino que dispara para generar un espacio de posibilidad."
                                     value={metadata.hmw}
                                     onChange={(val) => handleMetadata('hmw', val)}
                                 />
@@ -456,10 +456,10 @@
                                 <AutoExpandingTextarea 
                                     label="3. Escenario Prospectivo (2050)"
                                     icon="map"
-                                    placeholder="Describa cómo ha evolucionado el sistema visual en el futuro deseado..."
+                                    placeholder="Imaginen que el presente es un punto de luz, un foco (donde está ilustrado el ojo). A medida que esa luz se proyecta hacia adelante en el tiempo, el haz se abre. Cuanto más lejos miramos, más espacio hay para la incertidumbre y la innovación."
                                     value={metadata.prospectiva}
                                     onChange={(val) => handleMetadata('prospectiva', val)}
-                                />
+                                /> 
 
                                 <div className="no-print flex justify-end pt-4">
                                     <button 
@@ -480,7 +480,7 @@
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">DGF - FAD - UNCuyo</p>
+                                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Todos los derechos de la cátedra DGF - FAD - UNCuyo</p>
                                     <p className="text-[10px] font-black text-[#831843] uppercase tracking-tighter">Zona: {metadata.zona || 'SIN ASIGNAR'}</p>
                                 </div>
                             </div>
