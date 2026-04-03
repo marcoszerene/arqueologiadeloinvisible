@@ -19,15 +19,18 @@
         
         :root {
             --cono-red: #b01e23;
-            --cono-pink-light: #f9d8cf;
+            --cono-pink-light: #fcf5f3;
             --cono-pink-mid: #eeb8ac;
             --cono-purple: #831843;
             --cono-text: #374151;
+            --semaforo-verde: #22c55e;
+            --semaforo-amarillo: #eab308;
+            --semaforo-rojo: #ef4444;
         }
 
         body { 
             font-family: 'Inter', sans-serif; 
-            background-color: var(--cono-pink-light);
+            background-color: #f9d8cf;
             color: var(--cono-text);
         }
 
@@ -58,6 +61,15 @@
             resize: none;
             min-height: 90px;
         }
+
+        .bg-verde-semaforo { background-color: var(--semaforo-verde); }
+        .bg-amarillo-semaforo { background-color: var(--semaforo-amarillo); }
+        .bg-rojo-semaforo { background-color: var(--semaforo-rojo); }
+
+        .pedagogic-box {
+            border-left: 4px solid var(--cono-red);
+            background: linear-gradient(to right, #fcf5f3, white);
+        }
     </style>
 </head>
 <body>
@@ -79,7 +91,6 @@
 
         const AutoExpandingTextarea = ({ value, onChange, placeholder, className, label, icon }) => {
             const textareaRef = useRef(null);
-
             const adjustHeight = () => {
                 const textarea = textareaRef.current;
                 if (textarea) {
@@ -87,10 +98,7 @@
                     textarea.style.height = `${textarea.scrollHeight}px`;
                 }
             };
-
-            useEffect(() => {
-                adjustHeight();
-            }, [value]);
+            useEffect(() => { adjustHeight(); }, [value]);
 
             return (
                 <div className="space-y-3">
@@ -112,7 +120,6 @@
         };
 
         const App = () => {
-            // Se inicializan los registros con valor 1 en todos los campos (Gráfico Base)
             const [layers, setLayers] = useState([
                 { id: 1, name: 'Registro 01', scores: [1, 1, 1, 1, 1], visible: true, color: '#b01e23' },
                 { id: 2, name: 'Registro 02', scores: [1, 1, 1, 1, 1], visible: true, color: '#831843' },
@@ -121,17 +128,44 @@
             const [metadata, setMetadata] = useState({
                 autor: '',
                 zona: '',
+                categoria: 'MERCADO',
                 insight: '',
                 hmw: '',
                 prospectiva: ''
             });
 
+            const categorias = [
+                { id: 'MERCADO', label: 'Mercado', icon: 'shopping-cart' },
+                { id: 'SOCIAL', label: 'Social', icon: 'users' },
+                { id: 'CULTURAL', label: 'Cultural', icon: 'landmark' }
+            ];
+
             const variables = [
-                { subject: 'Sintonía', full: 'Espacial / Contexto' },
-                { subject: 'Fricción', full: 'Cognitivo / Usabilidad' },
-                { subject: 'Obsolescencia', full: 'Identidad / Inercia' },
-                { subject: 'Coherencia', full: 'Emocional / Conexión' },
-                { subject: 'Inclusividad', full: 'Social / Exclusión' },
+                { 
+                    subject: 'Sintonía', 
+                    painLabel: 'Físico-Espacial',
+                    description: 'Es la falla en la relación objeto - entorno - sujeto. Esto implica el impacto de la luz solar (contraste), la escala respecto al peatón/conductor y la materialidad. Si el diseño no sobrevive al entorno, deja de comunicar. Tiene que ver con lo pragmático que estudiaron en DG2. Ejemplo: Los leds en el ingreso a la ciudad en el acceso este, en ciertos horarios algunos no solo son peligrosos sino que con el sol y el ruido visual no alcanzamos a leerlos.'
+                },
+                { 
+                    subject: 'Fricción', 
+                    painLabel: 'Cognitivo',
+                    description: 'Mensajes que confunden o requieren demasiado esfuerzo mental. Ocurre cuando la pieza (el cartel, la señal, el envase) exige más recursos mentales de los que el usuario está dispuesto o puede asignar. Se puede producir a un nivel sintáctico, por exceso de información, falta de jerarquía o ruptura de convenciones visuales. O a un nivel semántico cuando el mensaje es ambiguo o carente de la información completa. Ejemplo: si la señalética en el MMAMM usara íconos tan abstractos que la gente no sabría hacia dónde caminar.'
+                },
+                { 
+                    subject: 'Obsolescencia', 
+                    painLabel: 'Identidad',
+                    description: 'Uso de clichés obsoletos que ya no representan al sector, desactualización de los mensajes. Son los usos de signos que han perdido su "vínculo vivo" con la realidad. Se mantiene un cliché (el racimo de uvas y la hoja de parra ilustrada para el vino por ejemplo) por inercia cultural, ocultando la verdadera innovación del sector. Son fórmulas que se adoptan y tienen un gran “copy + paste”. Ejemplo: Una bodega que vende vino "Low-Alcohol" (tecnológico/moderno) pero usa una etiqueta clásica tipográfica con diagramación central, la figura de la bodega en stamping y recuadros bordeando la etiqueta.'
+                },
+                { 
+                    subject: 'Coherencia', 
+                    painLabel: 'Emocional',
+                    description: 'Se refiere a la respuesta afectiva negativa que provoca una pieza. Un diseño frío o excluyente (que no contempla la diversidad) genera rechazo, miedo o sensación de abandono institucional. Ejemplo: Un formulario de hospital público que, por su tipografía y diagramación rígida, hace sentir al paciente como un número y no como una persona.'
+                },
+                { 
+                    subject: 'Inclusividad', 
+                    painLabel: 'Exclusión',
+                    description: 'Ocurre cuando el diseño levanta una barrera invisible que impide a ciertos grupos el acceso al mensaje o al servicio. No es que el mensaje sea "feo" o "confuso", es que el usuario siente que "esto no es para mí". Ejemplo: Una señalética de un centro cultural en un edificio histórico que solo usa tipografías de contraste mínimo o tamaños pequeños, impidiendo que adultos mayores o personas con disminución visual puedan participar del evento.'
+                },
             ];
 
             const layerColors = ['#b01e23', '#831843', '#d97706', '#9d174d', '#7c2d12'];
@@ -179,17 +213,23 @@
                 });
             }, [layers]);
 
-            const puntoDeDolorCritico = useMemo(() => {
+            const predominanteIdx = useMemo(() => {
                 const averages = variables.map((_, i) => 
                     layers.reduce((acc, curr) => acc + curr.scores[i], 0) / layers.length
                 );
                 const maxVal = Math.max(...averages);
-                const maxIdx = averages.indexOf(maxVal);
-                
-                // Si todos están en 1, no hay un dolor crítico marcado aún
-                if (maxVal === 1) return "Ninguno detectado";
-                return variables[maxIdx].subject;
+                return maxVal === 1 ? -1 : averages.lastIndexOf(maxVal);
             }, [layers]);
+
+            const puntoDeDolorCritico = predominanteIdx === -1 ? "Ninguno detectado" : variables[predominanteIdx].painLabel;
+            const explicacionDolor = predominanteIdx === -1 ? "El sistema analizado presenta niveles óptimos de salud visual en todas sus dimensiones." : variables[predominanteIdx].description;
+
+            const getSemaforoClass = (val) => {
+                if (val === 1) return 'bg-verde-semaforo';
+                if (val === 2) return 'bg-amarillo-semaforo';
+                if (val === 3) return 'bg-rojo-semaforo';
+                return '';
+            };
 
             return (
                 <div className="min-h-screen pb-12">
@@ -203,11 +243,6 @@
                                 <p className="text-[10px] text-white/70 font-bold uppercase tracking-widest leading-none mt-1">FAD UNCuyo</p>
                             </div>
                         </div>
-                        <div className="flex gap-4">
-                            <button onClick={() => window.print()} className="bg-white text-[#b01e23] hover:bg-slate-100 px-6 py-2.5 rounded-xl text-xs font-black flex items-center gap-2 transition-all shadow-lg uppercase">
-                                <Icon name="printer" size={14} /> Exportar Reporte
-                            </button>
-                        </div>
                     </nav>
 
                     <main className="max-w-[1400px] mx-auto mt-8 px-6 grid grid-cols-1 lg:grid-cols-12 gap-8 print:block print:mt-0 print:px-0">
@@ -215,11 +250,11 @@
                         <aside className="lg:col-span-4 space-y-6 no-print">
                             <section className="bg-white p-6 rounded-3xl shadow-sm border border-[#eeb8ac]">
                                 <h3 className="font-black text-[#b01e23] text-[10px] uppercase tracking-widest mb-6 flex items-center gap-2">
-                                    <Icon name="user" size={12} /> Arqueólogo/a Responsable
+                                    <Icon name="settings" size={12} /> Configuración de Análisis
                                 </h3>
                                 <div className="space-y-4">
                                     <div className="space-y-1">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Nombre y Apellido</label>
+                                        <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Arqueólogo/a</label>
                                         <input 
                                             type="text" 
                                             className="w-full bg-[#fcf5f3] border-none rounded-xl p-3 text-sm font-bold focus:ring-2 focus:ring-[#b01e23] transition-all"
@@ -227,11 +262,28 @@
                                             onChange={(e) => handleMetadata('autor', e.target.value)}
                                         />
                                     </div>
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Zona de Excavación</label>
+                                    
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Ámbito de Excavación</label>
+                                        <div className="grid grid-cols-3 gap-2">
+                                            {categorias.map(cat => (
+                                                <button
+                                                    key={cat.id}
+                                                    onClick={() => handleMetadata('categoria', cat.id)}
+                                                    className={`flex flex-col items-center gap-2 p-3 rounded-2xl border-2 transition-all ${metadata.categoria === cat.id ? 'border-[#b01e23] bg-[#fcf5f3]' : 'border-transparent bg-slate-50 opacity-60'}`}
+                                                >
+                                                    <Icon name={cat.icon} size={16} className={metadata.categoria === cat.id ? 'text-[#b01e23]' : 'text-slate-400'} />
+                                                    <span className={`text-[10px] font-black uppercase tracking-tighter ${metadata.categoria === cat.id ? 'text-[#b01e23]' : 'text-slate-400'}`}>{cat.label}</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-1 pt-2">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Zona de Intervención</label>
                                         <input 
                                             type="text" 
-                                            placeholder="Ciudad / Barrio / Punto de interés" 
+                                            placeholder="Ciudad / Barrio / Punto" 
                                             className="w-full bg-[#fcf5f3] border-none rounded-xl p-3 text-sm font-bold focus:ring-2 focus:ring-[#b01e23] transition-all"
                                             value={metadata.zona}
                                             onChange={(e) => handleMetadata('zona', e.target.value)}
@@ -245,12 +297,15 @@
                                     <h3 className="font-black text-[#b01e23] text-[10px] uppercase tracking-widest flex items-center gap-2">
                                         <Icon name="database" size={12} /> Unidades de Registro
                                     </h3>
-                                    <button onClick={addLayer} className="bg-[#b01e23] text-white p-1.5 rounded-lg hover:bg-[#831843] transition-all">
+                                    <button 
+                                        onClick={addLayer} 
+                                        className="bg-[#b01e23] text-white p-1.5 rounded-lg hover:bg-[#831843] transition-all flex items-center justify-center"
+                                    >
                                         <Icon name="plus" size={16} />
                                     </button>
                                 </div>
                                 
-                                <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                                <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                                     {layers.map((layer, lIdx) => (
                                         <div key={layer.id} className="p-4 rounded-2xl border border-slate-100 bg-[#fcf5f3]/50 hover:bg-white transition-all group">
                                             <div className="flex justify-between items-center mb-4">
@@ -277,7 +332,7 @@
                                                                 <button 
                                                                     key={val}
                                                                     onClick={() => updateScore(layer.id, vIdx, val)}
-                                                                    className={`w-6 h-6 text-[10px] font-black rounded-md transition-all ${layer.scores[vIdx] === val ? 'bg-[#b01e23] text-white shadow-sm' : 'text-slate-300 hover:text-[#eeb8ac]'}`}
+                                                                    className={`w-6 h-6 text-[10px] font-black rounded-md transition-all ${layer.scores[vIdx] === val ? `${getSemaforoClass(val)} text-white shadow-sm` : 'text-slate-300 hover:text-[#eeb8ac]'}`}
                                                                 >
                                                                     {val}
                                                                 </button>
@@ -296,9 +351,14 @@
                             
                             <div className="flex justify-between items-start border-b-4 border-[#b01e23] pb-6 mb-6">
                                 <div className="w-full">
-                                    <div className="bg-[#b01e23] text-white text-[9px] font-black px-2 py-1 inline-block rounded mb-4 tracking-widest uppercase leading-none">Diagnóstico Arqueológico 2026</div>
-                                    <h1 className="text-4xl font-black text-[#b01e23] tracking-tighter leading-none mb-2 whitespace-nowrap overflow-hidden text-ellipsis uppercase">ARQUEOLOGÍA DE LO INVISIBLE</h1>
-                                    <p className="text-[#831843] font-bold text-xs mono uppercase tracking-tight italic">Cátedra López Dupertuis | DGF - UNCuyo</p>
+                                    <div className="flex gap-2 items-center mb-4">
+                                        <div className="bg-[#b01e23] text-white text-[9px] font-black px-2 py-1 inline-block rounded tracking-widest uppercase leading-none">Diagnóstico Arqueológico 2026</div>
+                                        <div className="bg-slate-900 text-white text-[9px] font-black px-2 py-1 inline-block rounded tracking-widest uppercase leading-none">
+                                            ÁMBITO {metadata.categoria}
+                                        </div>
+                                    </div>
+                                    <h1 className="text-4xl font-black text-[#b01e23] tracking-tighter leading-none mb-2 uppercase">ARQUEOLOGÍA DE LO INVISIBLE</h1>
+                                    <p className="text-[#831843] font-bold text-xs mono uppercase italic">Cátedra López Dupertuis | DGF - UNCuyo</p>
                                 </div>
                             </div>
 
@@ -320,13 +380,13 @@
                                                     strokeWidth={3}
                                                 />
                                             ))}
-                                            <Legend verticalAlign="bottom" align="center" wrapperStyle={{ paddingTop: '15px', fontSize: '9px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px' }} />
+                                            <Legend verticalAlign="bottom" align="center" wrapperStyle={{ paddingTop: '15px', fontSize: '9px', fontWeight: 'bold', textTransform: 'uppercase' }} />
                                         </RadarChart>
                                     </ResponsiveContainer>
                                 </div>
                             </div>
 
-                            <div className="mb-8">
+                            <div className="mb-8 space-y-4">
                                 <div className="bg-[#b01e23] text-white px-8 py-3.5 rounded-[1.5rem] flex items-center justify-between shadow-lg">
                                     <div className="flex items-center gap-4">
                                         <Icon name="zap" className="text-[#f9d8cf]" size={20} />
@@ -337,6 +397,19 @@
                                         <p className="text-base font-black uppercase tracking-[0.15em] text-white">
                                             {puntoDeDolorCritico}
                                         </p>
+                                    </div>
+                                </div>
+
+                                {/* BLOQUE PEDAGÓGICO NUEVO */}
+                                <div className="pedagogic-box p-6 rounded-2xl border border-slate-100 shadow-sm">
+                                    <div className="flex items-start gap-3">
+                                        <Icon name="info" className="text-[#b01e23] mt-1 shrink-0" size={18} />
+                                        <div>
+                                            <h5 className="text-[10px] font-black text-[#b01e23] uppercase tracking-widest mb-1">Nota Pedagógica de Excavación</h5>
+                                            <p className="text-[13px] font-medium leading-relaxed text-slate-600">
+                                                {explicacionDolor}
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -365,6 +438,16 @@
                                     value={metadata.prospectiva}
                                     onChange={(val) => handleMetadata('prospectiva', val)}
                                 />
+
+                                <div className="no-print flex justify-end pt-4">
+                                    <button 
+                                        onClick={() => window.print()} 
+                                        className="bg-[#b01e23] text-white hover:bg-[#831843] px-8 py-4 rounded-2xl text-xs font-black flex items-center gap-3 transition-all shadow-xl uppercase tracking-widest transform hover:scale-[1.02]"
+                                    >
+                                        <Icon name="printer" size={16} /> 
+                                        Exportar Reporte
+                                    </button>
+                                </div>
                             </div>
 
                             <div className="mt-12 pt-6 border-t-2 border-[#eeb8ac] flex justify-between items-end">
