@@ -30,4 +30,4 @@ Haz clic en "IMPRIMIR REPORTE A4" para generar el documento final de entrega.
 
 No requiere instalación. Es un proyecto Single File que puedes ejecutar abriendo el archivo index.html en cualquier navegador moderno.
 
-Desarrollado para la comunidad académica de la FAD - UNCuyo.
+Desarrollado para la comunidad académica de la FAD - UNCuyo. Todos los contenidos son creados por la cátedra DGFINAL.
